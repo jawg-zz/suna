@@ -13,12 +13,8 @@ services:
 
   rabbitmq:
     image: rabbitmq
-    ports:
-      - "5672:5672"  
-      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -30,8 +26,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     volumes:
       - ./backend/.env:/app/.env:ro
     environment:
@@ -76,8 +70,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     volumes:
       - ./frontend/.env.local:/app/.env.local:ro
     environment:
