@@ -1,11 +1,9 @@
 services:
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
-      - redis_data:/data
-      - ./backend/services/docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - /redis_data:/data
+      - /backend/services/docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
     command: redis-server /usr/local/etc/redis/redis.conf --save 60 1 --loglevel warning
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -15,11 +13,8 @@ services:
 
   rabbitmq:
     image: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - /rabbitmq_data:/var/lib/rabbitmq
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
@@ -31,11 +26,9 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+      dockerfile: Dockerfile/
     volumes:
-      - ./backend/.env:/app/.env:ro
+      - /backend/.env:/app/.env:ro
     env_file:
       - ./backend/.env
     environment:
@@ -59,7 +52,7 @@ services:
       dockerfile: Dockerfile
     command: python -m dramatiq --skip-logging run_agent_background
     volumes:
-      - ./backend/.env:/app/.env:ro
+      - /backend/.env:/app/.env:ro
     env_file:
       - ./backend/.env
     environment:
@@ -80,16 +73,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     volumes:
-      - ./frontend/.env.local:/app/.env.local:ro
+      - /frontend/.env.local:/app/.env.local:ro
     environment:
       - NODE_ENV=production
     command: ["npm", "run", "start"]
     depends_on:
       - backend
-
-volumes:
-  redis_data:
-  rabbitmq_data:
